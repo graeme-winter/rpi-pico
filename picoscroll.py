@@ -3,6 +3,7 @@
 __pixels = None
 __WIDTH = 17
 __HEIGHT = 7
+__VALUES = " .-=*#%@"
 
 
 def get_width():
@@ -35,17 +36,15 @@ def is_pressed(button):
     return False
 
 
+__BAR = "+" + __WIDTH * "-+"
+
+
 def update():
     global __pixels
     print(chr(27) + "[2J")
     view = ""
     for y in range(__HEIGHT):
         for x in range(__WIDTH):
-            if __pixels[(x, y)] > 64:
-                view += "*"
-            elif __pixels[(x, y)] > 8:
-                view += "."
-            else:
-                view += " "
+            view += __VALUES[__pixels[(x, y)] // 32]
         view += "\n"
     print(view)
