@@ -60,13 +60,14 @@ def plot_digit(digit, x, y, b):
 
 
 def plot_time():
-    """Plot the time as a bar across the top"""
-    n = int((time.time() - t0) / 10) + 1
+    """Plot the time as a bar across the top - last pip will blink"""
+    dt = time.time() - t0
+    n = dt // 10 + 1
     if n > 25:
         n = 25
     for j in range(n):
         y, x = divmod(j, 5)
-        if j == n - 1:
+        if j == n - 1 and dt % 2:
             scroll.set_pixel(x + 1, y + 1, __BRIGHT)
         else:
             scroll.set_pixel(x + 1, y + 1, __BRIGHT // 2)
@@ -85,6 +86,8 @@ def main():
     load()
     while True:
         if scroll.is_pressed(scroll.BUTTON_X):
+            # dumb switch debouncing
+            time.sleep(0.1)
             count += 1
             t0 = time.time()
             save()
@@ -96,7 +99,7 @@ def main():
         plot_time()
         plot_count()
         scroll.update()
-        time.sleep(0.2)
+        time.sleep(0.1)
 
 
 main()
