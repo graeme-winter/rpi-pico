@@ -22,9 +22,23 @@ scroll.init()
 __WIDTH = scroll.get_width()
 __HEIGHT = scroll.get_height()
 __BRIGHT = 8
+__INI = "count.ini"
 
 t0 = time.time()
 count = 0
+
+
+def load():
+    try:
+        global count
+        count = int(open(__INI, "r").read())
+    except:
+        count = 0
+
+
+def save():
+    with open(__INI, "w") as f:
+        f.write(str(count))
 
 
 def plot_digit(digit, x, y, b):
@@ -68,10 +82,16 @@ def plot_count():
 
 def main():
     global t0, count
+    load()
     while True:
         if scroll.is_pressed(scroll.BUTTON_X):
             count += 1
             t0 = time.time()
+            save()
+        if scroll.is_pressed(scroll.BUTTON_A):
+            count = 0
+            t0 = time.time()
+            save()
         scroll.clear()
         plot_time()
         plot_count()
