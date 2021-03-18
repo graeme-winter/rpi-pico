@@ -46,7 +46,7 @@ def plot_number(value):
     digits = map(int, reversed(str(value)))
     scroll.clear()
     for j, digit in enumerate(digits):
-        plot_digit(digit, width - 5 - 4 * j, 1, 64)
+        plot_digit(digit, width - 5 * (j + 1), 1, 64)
     scroll.update()
 
 
