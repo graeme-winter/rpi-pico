@@ -55,6 +55,8 @@ def load():
     try:
         global count
         count = int(open(__INI, "r").read())
+        if count < 0:
+            count = 0
     except:
         count = 0
 
@@ -94,19 +96,29 @@ def plot_time():
             scroll.set_pixel(x + 1, y + 1, brightness)
         else:
             scroll.set_pixel(x + 1, y + 1, brightness // 2)
+    for j in range(n, 25):
+        y, x = divmod(j, 5)
+        scroll.set_pixel(x + 1, y + 1, 0)
 
 
 def plot_count():
     """Write the right-justified count"""
     assert count < 1000
     digits = map(int, reversed(str(count)))
+    scroll.clear()
     for j, digit in enumerate(digits):
         plot_digit(digit, __WIDTH - 5 * (j + 1), 1, brightness)
+
+
+def update():
+    plot_time()
+    scroll.update()
 
 
 def main():
     global t0, count, brightness
     load()
+    plot_count()
     while True:
         # dumb switch debouncing - time.sleep(0.1) below
         x = scroll.is_pressed(scroll.BUTTON_X)
@@ -115,35 +127,43 @@ def main():
         b = scroll.is_pressed(scroll.BUTTON_B)
 
         if b and x:
-            time.sleep(0.1)
             if brightness < 128:
                 brightness *= 2
+            plot_count()
+            update()
+            time.sleep(0.25)
+
         elif x:
-            time.sleep(0.1)
             count += 1
             t0 = time.time()
             save()
+            plot_count()
+            update()
+            time.sleep(0.25)
 
         if b and y:
-            time.sleep(0.1)
             if brightness > 1:
                 brightness //= 2
-        elif y:
-            time.sleep(0.1)
+            plot_count()
+            update()
+            time.sleep(0.25)
+
+        elif y and count > 0:
             count -= 1
             t0 = time.time()
             save()
+            plot_count()
+            update()
+            time.sleep(0.25)
 
         if a:
             count = 0
             t0 = time.time()
+            plot_count()
             save()
 
-        scroll.clear()
-        plot_time()
-        plot_count()
-        scroll.update()
-        time.sleep(0.1)
+        update()
+        time.sleep(0.02)
 
 
 main()
