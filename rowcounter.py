@@ -1,3 +1,26 @@
+# rowcounter.py
+#
+# Counter for counting rows when knitting, which includes a time indicator
+# which counts for ~ 250s since count was last changed, to answer the
+# question "did I just count that row?"
+#
+# (C) Graeme Winter, 2021
+#
+# UI:
+#
+# A                  X
+# +------------------+
+# |                  |
+# +------------------+
+# B                  Y
+#
+# A: reset
+# X: increment counter
+# Y: decrement counter
+# B+X: increase counter brightness
+# B+Y: decrease counter brightness
+#
+
 import time
 
 import picoscroll as scroll
@@ -21,11 +44,11 @@ __NUMBERS = (
 scroll.init()
 __WIDTH = scroll.get_width()
 __HEIGHT = scroll.get_height()
-__BRIGHT = 8
 __INI = "count.ini"
 
 t0 = time.time()
 count = 0
+brightness = 8
 
 
 def load():
@@ -68,9 +91,9 @@ def plot_time():
     for j in range(n):
         y, x = divmod(j, 5)
         if j == n - 1 and dt % 2:
-            scroll.set_pixel(x + 1, y + 1, __BRIGHT)
+            scroll.set_pixel(x + 1, y + 1, brightness)
         else:
-            scroll.set_pixel(x + 1, y + 1, __BRIGHT // 2)
+            scroll.set_pixel(x + 1, y + 1, brightness // 2)
 
 
 def plot_count():
@@ -78,23 +101,44 @@ def plot_count():
     assert count < 1000
     digits = map(int, reversed(str(count)))
     for j, digit in enumerate(digits):
-        plot_digit(digit, __WIDTH - 5 * (j + 1), 1, __BRIGHT)
+        plot_digit(digit, __WIDTH - 5 * (j + 1), 1, brightness)
 
 
 def main():
-    global t0, count
+    global t0, count, brightness
     load()
     while True:
-        if scroll.is_pressed(scroll.BUTTON_X):
-            # dumb switch debouncing
+        # dumb switch debouncing - time.sleep(0.1) below
+        x = scroll.is_pressed(scroll.BUTTON_X)
+        y = scroll.is_pressed(scroll.BUTTON_Y)
+        a = scroll.is_pressed(scroll.BUTTON_A)
+        b = scroll.is_pressed(scroll.BUTTON_B)
+
+        if b and x:
+            time.sleep(0.1)
+            if brightness < 128:
+                brightness *= 2
+        elif x:
             time.sleep(0.1)
             count += 1
             t0 = time.time()
             save()
-        if scroll.is_pressed(scroll.BUTTON_A):
+
+        if b and y:
+            time.sleep(0.1)
+            if brightness > 1:
+                brightness //= 2
+        elif y:
+            time.sleep(0.1)
+            count -= 1
+            t0 = time.time()
+            save()
+
+        if a:
             count = 0
             t0 = time.time()
             save()
+
         scroll.clear()
         plot_time()
         plot_count()
