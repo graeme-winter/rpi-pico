@@ -1,7 +1,7 @@
 # rowcounter.py
 #
 # Counter for counting rows when knitting, which includes a time indicator
-# which counts for ~ 250s since count was last changed, to answer the
+# which counts for ~ 12 minutes since count was last changed, to answer the
 # question "did I just count that row?"
 #
 # (C) Graeme Winter, 2021
@@ -87,7 +87,7 @@ def plot_digit(digit, x, y, b):
 def plot_time():
     """Plot the time as a bar across the top - last pip will blink"""
     dt = time.time() - t0
-    n = dt // 10 + 1
+    n = dt // 30 + 1
     if n > 25:
         n = 25
     for j in range(n):
