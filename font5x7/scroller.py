@@ -1,4 +1,5 @@
 import time
+import random
 
 import picoscroll as scroll
 
@@ -9,10 +10,6 @@ width = scroll.get_width()
 height = scroll.get_height()
 
 
-def _bin(n):
-    return "{0:08b}".format(n)
-
-
 def display(rendered_text, shift, brightness):
     """Display the rendered text on the scroll, at named offset"""
 
@@ -21,12 +18,14 @@ def display(rendered_text, shift, brightness):
 
     scroll.clear()
 
+    if shift < 0:
+        rendered_text = bytearray(0 for j in range(-shift)) + rendered_text
+        shift = 0
     view = rendered_text[shift : shift + width]
 
     for j, v in enumerate(view):
-        b = _bin(v)
-        for i, _b in enumerate(b):
-            scroll.set_pixel(j, j, brightness)
+        for i in range(height):
+            scroll.set_pixel(j, (height - 1) - i, brightness * ((v >> i) & 1))
     scroll.update()
 
 
@@ -40,4 +39,17 @@ def scroller(text, brightness):
         time.sleep(0.1)
 
 
-scroller("Hello, world!", 8)
+phrases = [
+    "Hello, world!",
+    "Wouldn't you like to be a pepper, too?",
+    "It's the end of the world as we know it, and I feel fine",
+    "Testing, testing, 1, 2, 3",
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
+    ":)     :(    :P   \o/",
+]
+
+
+while True:
+    phrase = random.choice(phrases)
+    scroller(phrase, 8)
+    time.sleep(1)
