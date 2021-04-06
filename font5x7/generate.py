@@ -12,6 +12,7 @@ import urllib.request
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
+import inspect
 
 
 def generate_bitmap():
@@ -69,10 +70,50 @@ def render_bitmap(bitmap, filename):
     plt.savefig(filename, bbox_inches="tight", pad_inches=0)
 
 
+def render(text):
+    """Render the text as a byte array as defined above."""
+
+    result = bytearray()
+    for t in text:
+        for c in __bitmap[ord(t)]:
+            result.append(c)
+        result.append(0)
+    return result
+
+
+def display(rendered_text):
+    """For debugging, print rendered text to stdout"""
+
+    tmp = [bin(i)[2:].zfill(7) for i in rendered_text]
+    disp = {"0": " ", "1": "*"}
+
+    for j in range(7):
+        print("".join(disp[t[j]] for t in tmp))
+
+
+def save(bitmap, filename):
+    """Save the generated bitmap in a format which will be useful for Python"""
+
+    header = open("generate.py", "r").readlines()[:8]
+
+    with open(filename, "w") as f:
+        f.write("".join(header))
+
+        f.write("__bitmap = {\n")
+        for c in sorted(bitmap):
+            values = ",".join(map(hex, bitmap[c]))
+            f.write(f"    {hex(c)}: ({values}),\n")
+        f.write("}\n")
+        f.write("\n\n")
+        f.write(inspect.getsource(render))
+        f.write("\n\n")
+        f.write(inspect.getsource(display))
+
+
 def main(filename):
     matplotlib.use("Agg")
     bitmap = generate_bitmap()
-    render_bitmap(bitmap, filename)
+    save(bitmap, filename)
 
 
 if __name__ == "__main__":
