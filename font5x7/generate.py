@@ -41,7 +41,8 @@ def generate_bitmap():
         for j in range(5):
             r = []
             for k in range(7):
-                r.append(tmp[c][k][j])
+                # 6 - k to turn upside-down i.e. write bits from top down
+                r.append(tmp[c][6 - k][j])
             l.append(int("".join(r), 2))
         bitmap[c] = l
 
@@ -84,7 +85,7 @@ def render(text):
 def display(rendered_text):
     """For debugging, print rendered text to stdout"""
 
-    tmp = [bin(i)[2:].zfill(7) for i in rendered_text]
+    tmp = list(bin(i)[2:].zfill(7)[::-1] for i in rendered_text)
     disp = {"0": " ", "1": "*"}
 
     for j in range(7):
