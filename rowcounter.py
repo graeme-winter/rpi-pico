@@ -15,10 +15,9 @@
 # B                  Y
 #
 # A: reset
+# B: toggle A / B
 # X: increment counter
 # Y: decrement counter
-# B+X: increase counter brightness
-# B+Y: decrease counter brightness
 #
 
 import time
@@ -47,23 +46,37 @@ __HEIGHT = scroll.get_height()
 __INI = "count.ini"
 
 t0 = time.time()
-count = 0
+count_a = 0
+count_b = 0
 brightness = 8
+
+# which one are we showing? a or b? if +1, a; -1, b
+showing = 1
 
 
 def load():
     try:
-        global count
-        count = int(open(__INI, "r").read())
-        if count < 0:
-            count = 0
+        global count_a, count_b, showing
+        saved = int(open(__INI, "r").read())
+        if saved < 0:
+            count_a = 0
+            count_b = 0
+            showing = -1
+        else:
+            count_a = saved % 1000
+            count_b = saved // 1000
+            showing = 1
+
     except:
-        count = 0
+        count_a = 0
+        count_b = 0
+        showing = 1
 
 
 def save():
     with open(__INI, "w") as f:
-        f.write(str(count))
+        save = 1000 * count_b + count_a
+        f.write(str(showing * save))
 
 
 def plot_digit(digit, x, y, b):
@@ -103,6 +116,12 @@ def plot_time():
 
 def plot_count():
     """Write the right-justified count"""
+    if showing > 0:
+        count = count_a
+        scroll.set_pixel(16, 6, brightness)
+    else:
+        count = count_b
+        scroll.set_pixel(16, 0, brightness)
     assert count < 1000
     digits = map(int, reversed(str(count)))
     scroll.clear()
@@ -115,8 +134,34 @@ def update():
     scroll.update()
 
 
+def incr_count():
+    global count_a, count_b, showing
+    if showing > 0:
+        count_a += 1
+    else:
+        count_b += 1
+
+
+def decr_count():
+    global count_a, count_b, showing
+    if showing > 0:
+        if count_a > 0:
+            count_a -= 1
+    else:
+        if count_b > 0:
+            count_b -= 1
+
+
+def zero_count():
+    global count_a, count_b, showing
+    if showing > 0:
+        count_a = 0
+    else:
+        count_b = 0
+
+
 def main():
-    global t0, count, brightness
+    global t0, count_a, count_b, showing, brightness
     load()
     plot_count()
     while True:
@@ -126,30 +171,16 @@ def main():
         a = scroll.is_pressed(scroll.BUTTON_A)
         b = scroll.is_pressed(scroll.BUTTON_B)
 
-        if b and x:
-            if brightness < 128:
-                brightness *= 2
-            plot_count()
-            update()
-            time.sleep(0.25)
-
-        elif x:
-            count += 1
+        if x:
+            incr_count()
             t0 = time.time()
             save()
             plot_count()
             update()
             time.sleep(0.25)
 
-        if b and y:
-            if brightness > 1:
-                brightness //= 2
-            plot_count()
-            update()
-            time.sleep(0.25)
-
-        elif y and count > 0:
-            count -= 1
+        if y:
+            decr_count()
             t0 = time.time()
             save()
             plot_count()
@@ -157,10 +188,20 @@ def main():
             time.sleep(0.25)
 
         if a:
-            count = 0
+            zero_count()
             t0 = time.time()
             plot_count()
             save()
+            time.sleep(0.25)
+
+        if b:
+            if showing > 0:
+                showing = -1
+            else:
+                showing = 1
+            plot_count()
+            save()
+            time.sleep(0.25)
 
         update()
         time.sleep(0.02)
