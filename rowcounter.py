@@ -116,15 +116,15 @@ def plot_time():
 
 def plot_count():
     """Write the right-justified count"""
-    if showing > 0:
-        count = count_a
-        scroll.set_pixel(16, 6, brightness)
-    else:
-        count = count_b
-        scroll.set_pixel(16, 0, brightness)
     assert count < 1000
     digits = map(int, reversed(str(count)))
     scroll.clear()
+    if showing > 0:
+        count = count_a
+        scroll.set_pixel(0, 0, brightness)
+    else:
+        count = count_b
+        scroll.set_pixel(0, 6, brightness)
     for j, digit in enumerate(digits):
         plot_digit(digit, __WIDTH - 5 * (j + 1), 1, brightness)
 
